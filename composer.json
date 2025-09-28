@@ -1,0 +1,27 @@
+{
+    "name": "af-coupon-gift-adder/af-coupon-gift-adder",
+    "description": "Plugin to get a free product with a coupon code",
+    "type": "shopware-platform-plugin",
+    "version": "1.0.0",
+    "license": "MIT",
+    "require": {
+        "shopware/core": "~6.7.0"
+    },
+    "extra": {
+        "shopware-plugin-class": "AfCouponGiftAdder\\AfCouponGiftAdder",
+        "label": {
+            "de-DE": "Gratis Produkt via Gutschein",
+            "en-GB": "Free product via coupon"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "AfCouponGiftAdder\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "AfCouponGiftAdder\\Tests\\": "tests/"
+        }
+    }
+}
