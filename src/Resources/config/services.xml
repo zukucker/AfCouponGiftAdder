@@ -7,7 +7,16 @@
     <services>
 
         <service id="AfCouponGiftAdder\Subscriber\MySubscriber">
+            <argument type="service" id="AfCouponGiftAdder\Service\CouponGiftAdderService" />
             <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <service id="AfCouponGiftAdder\Service\CouponGiftAdderService">
+             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+             <argument type="service" id="promotion.repository" />
+             <argument type="service" id="product.repository" />
+             <argument type="service" id="media.repository" />
+             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
         </service>
 
         <service id="AfCouponGiftAdder\Storefront\Controller\ExampleController" public="true">
