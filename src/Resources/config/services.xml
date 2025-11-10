@@ -17,6 +17,7 @@
              <argument type="service" id="promotion.repository" />
              <argument type="service" id="product.repository" />
              <argument type="service" id="media.repository" />
+             <argument type="service" id="sales_channel.product.repository" />
              <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
         </service>
 

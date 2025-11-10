@@ -14,7 +14,10 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Checkout\Cart\Event\BeforeLineItemAddedEvent;
+use Shopware\Core\Framework\Struct\ArrayStruct;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
@@ -25,6 +28,7 @@ class CouponGiftAdderService {
     private EntityRepository $promotionRepository; 
     private EntityRepository $productRepository; 
     private EntityRepository $mediaRepository; 
+    private SalesChannelRepository $salesChannelProductRepository; 
     private CartService $cartSerivce;
 
     public function __construct(
@@ -33,6 +37,7 @@ class CouponGiftAdderService {
         EntityRepository $promotionRepository, 
         EntityRepository $productRepository, 
         EntityRepository $mediaRepository, 
+        SalesChannelRepository $salesChannelProductRepository,
         CartService $cartService
     )
     {
@@ -41,6 +46,7 @@ class CouponGiftAdderService {
         $this->promotionRepository = $promotionRepository;
         $this->productRepository = $productRepository;
         $this->mediaRepository = $mediaRepository;
+        $this->salesChannelProductRepository = $salesChannelProductRepository;
         $this->cartSerivce = $cartService;
     }
 
@@ -126,6 +132,15 @@ class CouponGiftAdderService {
         if($customLineItems){
             $this->cartSerivce->remove($cart, $customLineItems[0]->getId(), $context);
         }
+    }
+
+    public function toggleModal(BeforeLineItemAddedEvent $event, SalesChannelContext $context)
+    {
+        $products = $this->configService->get('AfCouponGiftAdder.config.selectedProducts');
+        $result = $this->salesChannelProductRepository->search(new Criteria($products), $context)->getEntities();
+        $cart = $event->getCart();
+        $cart->addExtension("free_product", new ArrayStruct(["products" => $result]));
+
     }
 
 }

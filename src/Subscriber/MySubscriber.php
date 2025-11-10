@@ -36,14 +36,18 @@ class MySubscriber implements EventSubscriberInterface
             if ($code !== null && $code !== '') {
                 // here we have valid code
                 if(strtolower($code) === strtolower($this->couponService->getSelectedVoucher($context))){
+                    // toggle modal to select free product
+                    $this->couponService->toggleModal($event, $context);
+
+
+
                     // it is our code we now add the selection
                     $this->couponService->createPlaceholderItem($event->getCart(), $context);
-                    //dump($this->couponService->getSelectedProducts($context));
                 }
             }
         }
-        //die();
     }
+
     public function onLineItemRemoved(BeforeLineItemRemovedEvent $event)
     {
         $cart = $event->getCart();
