@@ -2,8 +2,11 @@
 
 namespace AfCouponGiftAdder\Service;
 
+use Exception;
 use Shopware\Core\Checkout\Cart\Cart;
+use Shopware\Core\Checkout\Cart\LineItemFactoryRegistry;
 use Shopware\Core\Checkout\Cart\LineItem\LineItem;
+use Shopware\Core\Checkout\Cart\LineItem\QuantityInformation;
 use Shopware\Core\Checkout\Cart\Price\Struct\QuantityPriceDefinition;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
 use Shopware\Core\Checkout\Cart\Tax\Struct\TaxRuleCollection as StructTaxRuleCollection;
@@ -17,6 +20,7 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class CouponGiftAdderService {
 
+    private LineItemFactoryRegistry $factory;
     private SystemConfigService $configService;
     private EntityRepository $promotionRepository; 
     private EntityRepository $productRepository; 
@@ -24,6 +28,7 @@ class CouponGiftAdderService {
     private CartService $cartSerivce;
 
     public function __construct(
+        LineItemFactoryRegistry $factory,
         SystemConfigService $configService, 
         EntityRepository $promotionRepository, 
         EntityRepository $productRepository, 
@@ -31,6 +36,7 @@ class CouponGiftAdderService {
         CartService $cartService
     )
     {
+        $this->factory = $factory;
         $this->configService = $configService;
         $this->promotionRepository = $promotionRepository;
         $this->productRepository = $productRepository;
@@ -85,18 +91,33 @@ class CouponGiftAdderService {
 
     public function createPlaceholderItem(Cart $cart, SalesChannelContext $context)
     {
-        $lineItem = new LineItem(Uuid::randomHex(), LineItem::CUSTOM_LINE_ITEM_TYPE, null, 1);
-        $lineItem->setStackable(true);
-        $lineItem->setRemovable(true);
-        if($this->getSelectedName()){
-            $lineItem->setLabel($this->getSelectedName());
-        }else{
-            $lineItem->setLabel("Gratis Produkt");
-        }
-        $lineItem->setCover($this->getSelectedMedia($context));
-        $lineItem->setPriceDefinition(new QuantityPriceDefinition(0, new StructTaxRuleCollection()));
+        $selectedProducts = $this->getSelectedProducts($context);
+        foreach($selectedProducts as $product){
+            dump($product->getId());
+            $lineItem = $this->factory->create([
+                'type' => LineItem::PRODUCT_LINE_ITEM_TYPE,
+                'referencedId' => $product->getId(),
+                'stable' => false,
+                'quantity' => 1,
+                'price' => new QuantityPriceDefinition(100, $cart->getPrice()->getTaxRules(), 1),
+                'payload' =>[
+                    'free_product' => true
+                ]
+            ], $context);
 
-        $this->cartSerivce->add($cart, $lineItem, $context);
+            $lineItem->setGood(true);
+            $lineItem->setRemovable(true);
+            $lineItem->setStackable(false);
+            $lineItem->setQuantityInformation(new QuantityInformation(false, 1, 1, 1));
+            $lineItem->setId("free_product");
+
+            try{
+                $this->cartSerivce->add($cart, $lineItem, $context);
+            }catch(Exception $err){
+                dump($err->getMessage());
+                die();
+            }
+        }
     }
 
     public function removePlaceholderItem(Cart $cart, SalesChannelContext $context)

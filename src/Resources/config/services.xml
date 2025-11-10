@@ -12,6 +12,7 @@
         </service>
 
         <service id="AfCouponGiftAdder\Service\CouponGiftAdderService">
+             <argument type="service" id="Shopware\Core\Checkout\Cart\LineItemFactoryRegistry" />
              <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
              <argument type="service" id="promotion.repository" />
              <argument type="service" id="product.repository" />
@@ -23,6 +24,15 @@
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
+        </service>
+
+        <service id="AfCouponGiftAdder\Core\Checkout\Cart\OverwritePriceCollector">
+            <argument type="service" id="Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+
+            <!-- after product collector/processor -->
+            <tag name="shopware.cart.processor" priority="4500" />
+            <tag name="shopware.cart.collector" priority="4500" />
         </service>
 
         <service id="AfCouponGiftAdder\Core\Content\Example\SalesChannel\ExampleRoute">
